@@ -2,6 +2,7 @@
 
 // include post class
 require_once 'Post.php';
+require_once 'JWTHandler.php';
 
 // set response headet to json
 header("Content-Type: application/json");
@@ -12,15 +13,21 @@ $method  = $_SERVER['REQUEST_METHOD'];
 // get path info
 @$path = explode("/", $_SERVER['PATH_INFO']);
 
+$token = $path[1];
+$jwt = new JWTHandler();
+
+if(!$jwt->validateToken($token)) {
+    die('invalid token');
+}
 
 $post = new Post();
 
 
 switch ($method) {
     case 'GET':
-        if ($path[1] == 'posts') {
-            if(isset($path[2])) {
-                $response = $post->getPostById($path[2]);
+        if ($path[2] == 'posts') {
+            if(isset($path[3])) {
+                $response = $post->getPostById($path[3]);
                 http_response_code(200);
             }else {
                 $response = $post->getPosts();
@@ -34,7 +41,7 @@ switch ($method) {
         }
         break;
     case 'POST':
-        if($path[1] == 'posts') {
+        if($path[2] == 'posts') {
             $title = $_POST['title'];
             $description = $_POST['description'];
             $response = $post->createPost($title, $description);
